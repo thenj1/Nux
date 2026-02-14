@@ -1,6 +1,6 @@
 import { IsString, IsNumber, Min, IsOptional } from "class-validator";
 
-export class CreateRawMaterialDto{
+export class UpdateRawMaterialDto{
     @IsOptional()
     @IsString({ message: 'Put a valid value'})
     name?: string

@@ -55,7 +55,15 @@ export class RawMaterialsRepository {
         })
     }
 
-    async updateProduct(data: Prisma.ProductUpdateInput, id: number): Promise<RawMaterial> {
+    async findByCod(cod: string): Promise<RawMaterial | null> {
+        return await this.prisma.rawMaterial.findUnique({
+            where: {
+                cod
+            }
+        })
+    }
+
+    async updateRawMaterial(data: Prisma.RawMaterialUpdateInput, id: number): Promise<RawMaterial> {
         return await this.prisma.rawMaterial.update({
             data,
             where: {
@@ -64,7 +72,7 @@ export class RawMaterialsRepository {
         })
     }
 
-    async deleteProduct(id: number): Promise<RawMaterial> {
+    async deleteRawMaterial(id: number): Promise<RawMaterial> {
         return await this.prisma.rawMaterial.delete({
             where: {
                 id: Number(id)
