@@ -1,12 +1,12 @@
 import { IsEmail, IsString, MinLength } from "class-validator";
 
 export class CreateUserDto {
-    @IsEmail({}, { message: 'Email inválido'})
+    @IsEmail({}, { message: 'Invalid Email'})
     email: string;
 
-    @IsString({ message: 'Nome inválido' })
+    @IsString({ message: 'Invalid name' })
     name: string;
 
-    @MinLength(8, { message: 'A senha deve ter no mínimo 8 caracteres'})
+    @MinLength(8, { message: 'Password must have more than 8 character'})
     password: string;
 }
