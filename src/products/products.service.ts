@@ -1,14 +1,14 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { ProductRepository } from './products.repository';
-import { UpdateProduct } from './dto/update-product.dto';
-import { CreateProduct } from './dto/create-product.dto';
-import { PaginatedResponse, ProductResponse } from './dto/product-response.dto';
+import { UpdateProductDto } from './dto/update-product.dto';
+import { CreateProductDto } from './dto/create-product.dto';
+import { PaginatedResponse, ProductResponseDto } from './dto/product-response.dto';
 import { Product } from '@prisma/client';
 
 @Injectable()
 export class ProductsService {
     constructor(private productRepository: ProductRepository) { }
-    async findAll(pages: number, limit: number, sort: 'asc' | 'desc' = 'desc'): Promise<PaginatedResponse<ProductResponse>> {
+    async findAll(pages: number, limit: number, sort: 'asc' | 'desc' = 'desc'): Promise<PaginatedResponse<ProductResponseDto>> {
         const skip = (pages - 1) * limit;
 
         const { data: products, total } = await this.productRepository.findAll(skip, limit, sort)
@@ -29,7 +29,7 @@ export class ProductsService {
         }
     }
 
-    async findByName(pages: number, limit: number, sort: 'asc' | 'desc' = 'desc', name: string): Promise<PaginatedResponse<ProductResponse>> {
+    async findByName(pages: number, limit: number, sort: 'asc' | 'desc' = 'desc', name: string): Promise<PaginatedResponse<ProductResponseDto>> {
         const skip = (pages - 1) * limit;
 
         const { data: products, total } = await this.productRepository.findByName(skip, limit, sort, name)
@@ -50,7 +50,7 @@ export class ProductsService {
         }
     }
 
-    async findByCod(cod: string): Promise<ProductResponse> {
+    async findByCod(cod: string): Promise<ProductResponseDto> {
         const product = await this.productRepository.findByCod(cod);
         if (!product) {
             throw new NotFoundException('Produto não encontrado')
@@ -59,7 +59,7 @@ export class ProductsService {
         return product;
     }
 
-    async createProduct(data: CreateProduct): Promise<ProductResponse> {
+    async createProduct(data: CreateProductDto): Promise<ProductResponseDto> {
         const { name, cod, price } = data;
 
         const codExists = await this.productRepository.findByCod(cod);
@@ -76,7 +76,7 @@ export class ProductsService {
         return product;
     }
 
-    async updateProduct(data: UpdateProduct, id: number): Promise<ProductResponse> {
+    async updateProduct(data: UpdateProductDto, id: number): Promise<ProductResponseDto> {
         const { name, cod, price } = data;
         const productFound = await this.productRepository.findById(id)
         if (!productFound) {

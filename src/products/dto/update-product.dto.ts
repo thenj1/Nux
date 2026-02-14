@@ -1,6 +1,6 @@
 import { IsString, IsNumber, Min, IsOptional } from 'class-validator';
 
-export class UpdateProduct {
+export class UpdateProductDto {
     @IsOptional()
     @IsString({ message: 'Name must be a string' })
     name?: string;
