@@ -4,6 +4,54 @@ const api = axios.create({
     baseURL: 'http://localhost:3000',
 });
 
+// ── Interceptor de REQUEST: envia token automaticamente ──
+api.interceptors.request.use((config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+});
+
+// ── Interceptor de RESPONSE: refresh automático no 401 ──
+api.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+        const originalRequest = error.config;
+
+        if (error.response?.status === 401 && !originalRequest._retry) {
+            originalRequest._retry = true;
+
+            const refreshToken = localStorage.getItem('refreshToken');
+            if (!refreshToken) {
+                localStorage.clear();
+                window.location.href = '/login';
+                return Promise.reject(error);
+            }
+
+            try {
+                const { data } = await axios.post('http://localhost:3000/users/refresh-token', {
+                    refreshToken,
+                });
+
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('refreshToken', data.refreshToken);
+
+                originalRequest.headers.Authorization = `Bearer ${data.token}`;
+                return api(originalRequest);
+            } catch {
+                localStorage.clear();
+                window.location.href = '/login';
+                return Promise.reject(error);
+            }
+        }
+
+        return Promise.reject(error);
+    }
+);
+
+// ── Interfaces ──
+
 export interface PaginatedResponse<T> {
     data: T[];
     meta: {
@@ -12,6 +60,18 @@ export interface PaginatedResponse<T> {
         total: number;
         totalPages: number;
     };
+}
+
+export interface User {
+    id: number;
+    email: string;
+    name: string;
+}
+
+export interface LoginResponse {
+    user: User;
+    token: string;
+    refreshToken: string;
 }
 
 export interface Product {
@@ -50,6 +110,35 @@ export interface ProductionSummary {
     totalValue: number;
 }
 
+// ── Auth ──
+
+export async function login(email: string, password: string): Promise<LoginResponse> {
+    const response = await api.post<LoginResponse>('/users/login', { email, password });
+    localStorage.setItem('token', response.data.token);
+    localStorage.setItem('refreshToken', response.data.refreshToken);
+    localStorage.setItem('user', JSON.stringify(response.data.user));
+    return response.data;
+}
+
+export async function register(name: string, email: string, password: string): Promise<User> {
+    const response = await api.post<User>('/users/create', { name, email, password });
+    return response.data;
+}
+
+export async function logout(): Promise<void> {
+    const refreshToken = localStorage.getItem('refreshToken');
+    if (refreshToken) {
+        try {
+            await api.post('/users/logout', { refreshToken });
+        } catch {
+            // Ignora erro — limpa localStorage de qualquer forma
+        }
+    }
+    localStorage.clear();
+}
+
+// ── Products ──
+
 export async function getProducts(page = 1, limit = 20, sort: 'asc' | 'desc' = 'desc') {
     const response = await api.get<PaginatedResponse<Product>>('/products', {
         params: { page, limit, sort },
@@ -78,6 +167,8 @@ export async function deleteProduct(id: number) {
     const response = await api.delete<{ message: string }>(`/products/delete/${id}`);
     return response.data;
 }
+
+// ── Raw Materials ──
 
 export async function getRawMaterials(page = 1, limit = 20, sort: 'asc' | 'desc' = 'desc') {
     const response = await api.get<PaginatedResponse<RawMaterial>>('/raw-materials', {
@@ -108,6 +199,8 @@ export async function deleteRawMaterial(id: number) {
     return response.data;
 }
 
+// ── Product Materials ──
+
 export async function getProductMaterials(productId: number) {
     const response = await api.get<ProductMaterial[]>(`/product-materials/product/${productId}`);
     return response.data;
@@ -127,6 +220,8 @@ export async function deleteProductMaterial(id: number) {
     const response = await api.delete<{ message: string }>(`/product-materials/delete/${id}`);
     return response.data;
 }
+
+// ── Production ──
 
 export async function getProductionSuggestion() {
     const response = await api.get<ProductionSummary>('/production/suggestion');

@@ -132,18 +132,21 @@ export class UsersService {
                 name: userExist.name,
                 email: userExist.email,
             },
-            { expiresIn: "30m" }
+            {
+                expiresIn: "30m",
+                secret: process.env.JWT_SECRET || 'default-secret'
+            }
         )
 
         const refreshToken = this.jwt.sign({
             id: userExist.id,
             name: userExist.name,
             email: userExist.email
-        }, 
-        { 
-            expiresIn: "7d",
-            secret: process.env.JWT_SECRET_REFRESH
-        } 
+        },
+            {
+                expiresIn: "7d",
+                secret: process.env.JWT_SECRET_REFRESH
+            }
         )
 
         const expiresAt = new Date();
@@ -151,7 +154,7 @@ export class UsersService {
 
         await this.userRepository.createRefreshToken({
             token: refreshToken,
-            user:{
+            user: {
                 connect: {
                     id: userExist.id
                 }
@@ -165,11 +168,11 @@ export class UsersService {
 
     async refreshAcessToken(refreshToken: string): Promise<RefreshTokenResponse> {
         const refreshTokenExist = await this.userRepository.findRefreshToken(refreshToken)
-        if(!refreshTokenExist){
+        if (!refreshTokenExist) {
             throw new NotFoundException('Token not found')
         }
 
-        if(refreshTokenExist.expiresAt < new Date()){
+        if (refreshTokenExist.expiresAt < new Date()) {
             await this.userRepository.deleteRefreshToken(refreshTokenExist.id);
             throw new UnauthorizedException('Token invalid')
         }
@@ -177,7 +180,7 @@ export class UsersService {
         await this.userRepository.deleteRefreshToken(refreshTokenExist.id);
 
         const userFound = await this.findById(refreshTokenExist.userId);
-        if(!userFound){
+        if (!userFound) {
             throw new NotFoundException('User not found')
         }
 
@@ -186,7 +189,10 @@ export class UsersService {
             email: userFound.email,
             name: userFound.name
         },
-        { expiresIn: "30m" }
+            {
+                expiresIn: "30m",
+                secret: process.env.JWT_SECRET || 'default-secret'
+            }
         )
 
         const newRefreshToken = await this.jwt.sign({
@@ -194,12 +200,12 @@ export class UsersService {
             email: userFound.email,
             name: userFound.name
         },
-        {
-            expiresIn: "7d",
-            secret: process.env.JWT_SECRET_REFRESH
-        }
+            {
+                expiresIn: "7d",
+                secret: process.env.JWT_SECRET_REFRESH
+            }
         )
-        
+
         const expiresAt = new Date();
         expiresAt.setDate(expiresAt.getDate() + 7);
 
@@ -217,7 +223,7 @@ export class UsersService {
 
     async logout(refreshToken: string): Promise<{ message: string }> {
         const token = await this.userRepository.findRefreshToken(refreshToken);
-        if(!token){
+        if (!token) {
             throw new NotFoundException('Token not found')
         }
 
