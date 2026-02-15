@@ -7,7 +7,7 @@ import { UpdateProductMaterialDto } from './dto/update-product-material.dto';
 export class ProductMaterialsController {
     constructor(private readonly productMaterialsService: ProductMaterialsService) { }
 
-    @Post()
+    @Post('create')
     async create(@Body() createDto: CreateProductMaterialDto) {
         return await this.productMaterialsService.create(createDto);
     }
@@ -17,7 +17,7 @@ export class ProductMaterialsController {
         return await this.productMaterialsService.findByProductId(Number(productId));
     }
 
-    @Put(':id')
+    @Put('update/:id')
     async update(
         @Param('id') id: string,
         @Body() updateDto: UpdateProductMaterialDto
@@ -25,7 +25,7 @@ export class ProductMaterialsController {
         return await this.productMaterialsService.update(Number(id), updateDto);
     }
 
-    @Delete(':id')
+    @Delete('delete/:id')
     async delete(@Param('id') id: string) {
         return await this.productMaterialsService.delete(Number(id));
     }

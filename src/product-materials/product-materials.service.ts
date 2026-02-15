@@ -18,14 +18,14 @@ export class ProductMaterialsService {
             where: { id: productId }
         });
         if (!productExists) {
-            throw new NotFoundException(`Product with ID ${productId} not found`);
+            throw new NotFoundException(`Product not found`);
         }
 
         const rawMaterialExists = await this.prisma.rawMaterial.findUnique({
             where: { id: rawMaterialId }
         });
         if (!rawMaterialExists) {
-            throw new NotFoundException(`Raw material with ID ${rawMaterialId} not found`);
+            throw new NotFoundException(`Raw material not found`);
         }
 
         const associationExists = await this.productMaterialsRepository.findByProductAndMaterial(
@@ -34,7 +34,7 @@ export class ProductMaterialsService {
         );
         if (associationExists) {
             throw new ConflictException(
-                `Product ${productId} is already associated with raw material ${rawMaterialId}`
+                `Product is already associated with raw material`
             );
         }
 
@@ -64,7 +64,7 @@ export class ProductMaterialsService {
 
         const associationExists = await this.productMaterialsRepository.findById(id);
         if (!associationExists) {
-            throw new NotFoundException(`Product-Material association with ID ${id} not found`);
+            throw new NotFoundException(`Product-Material association not found`);
         }
 
         return await this.productMaterialsRepository.updateProductMaterial(id, quantity);
@@ -73,7 +73,7 @@ export class ProductMaterialsService {
     async delete(id: number) {
         const associationExists = await this.productMaterialsRepository.findById(id);
         if (!associationExists) {
-            throw new NotFoundException(`Product-Material association with ID ${id} not found`);
+            throw new NotFoundException(`Product-Material association not found`);
         }
 
         await this.productMaterialsRepository.deleteProductMaterial(id);

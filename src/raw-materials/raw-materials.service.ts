@@ -14,7 +14,7 @@ export class RawMaterialsService{
 
         const { data: rawMaterial, total } = await this.rawMaterialRepository.findAll(skip, limit, sort)
         if (total == 0) {
-            throw new NotFoundException('Nenhuma materia prima cadastrado')
+            throw new NotFoundException('No raw materials found')
         }
 
         const totalPages = Math.ceil(total / limit)
@@ -35,7 +35,7 @@ export class RawMaterialsService{
 
         const { data: rawMaterial, total } = await this.rawMaterialRepository.findByName(skip, limit, sort, name)
         if (total == 0) {
-            throw new NotFoundException('Nenhuma materia prima cadastrada')
+            throw new NotFoundException('No raw materials found')
         }
 
         const totalPages = Math.ceil(total / limit)
@@ -82,7 +82,7 @@ export class RawMaterialsService{
         const { name, cod, stock } = data;
         const rawMaterialFound = await this.rawMaterialRepository.findById(id)
         if (!rawMaterialFound) {
-            throw new NotFoundException('raw material não encontrado')
+            throw new NotFoundException('raw material not found')
         }
 
         const rawMaterial = await this.rawMaterialRepository.updateRawMaterial({
@@ -97,11 +97,11 @@ export class RawMaterialsService{
     async deleteRawMaterial(id: number): Promise<{ message: string }> {
         const rawMaterialExists = await this.rawMaterialRepository.findById(id)
         if (!rawMaterialExists) {
-            throw new NotFoundException('rawMaterial not encontrado')
+            throw new NotFoundException('raw material not found')
         }
 
         await this.rawMaterialRepository.deleteRawMaterial(id)
 
-        return { message: 'raw material com sucesso' }
+        return { message: 'raw material deleted successfully' }
     }
 }

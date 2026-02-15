@@ -13,7 +13,7 @@ export class ProductsService {
 
         const { data: products, total } = await this.productRepository.findAll(skip, limit, sort)
         if (total == 0) {
-            throw new NotFoundException('Nenhuma produto cadastrado')
+            throw new NotFoundException('No products found')
         }
 
         const totalPages = Math.ceil(total / limit)
@@ -34,7 +34,7 @@ export class ProductsService {
 
         const { data: products, total } = await this.productRepository.findByName(skip, limit, sort, name)
         if (total == 0) {
-            throw new NotFoundException('Nenhuma produto cadastrado')
+            throw new NotFoundException('No products found')
         }
 
         const totalPages = Math.ceil(total / limit)
@@ -53,7 +53,7 @@ export class ProductsService {
     async findByCod(cod: string): Promise<ProductResponseDto> {
         const product = await this.productRepository.findByCod(cod);
         if (!product) {
-            throw new NotFoundException('Produto não encontrado')
+            throw new NotFoundException('Product not found')
         }
 
         return product;
@@ -80,7 +80,7 @@ export class ProductsService {
         const { name, cod, price } = data;
         const productFound = await this.productRepository.findById(id)
         if (!productFound) {
-            throw new NotFoundException('Produto não encontrado')
+            throw new NotFoundException('Product not found')
         }
 
         const product = await this.productRepository.updateProduct({
@@ -95,11 +95,11 @@ export class ProductsService {
     async deleteProduct(id: number): Promise<{ message: string }> {
         const productExists = await this.productRepository.findById(id)
         if (!productExists) {
-            throw new NotFoundException('Produto não encontrado')
+            throw new NotFoundException('Product not found')
         }
 
         await this.productRepository.deleteProduct(id)
 
-        return { message: 'Produto deletado com sucesso' }
+        return { message: 'Product deleted successfully' }
     }
 }

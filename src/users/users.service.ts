@@ -16,7 +16,7 @@ export class UsersService {
         const { data: users, total } = await this.userRepository.findAll(skip, limit, sort)
 
         if (total == 0) {
-            throw new NotFoundException('Usuários não encontrados')
+            throw new NotFoundException('No users found')
         }
 
         const totalPages = Math.ceil(total / limit);
@@ -40,7 +40,7 @@ export class UsersService {
         const user = await this.userRepository.findById(id);
 
         if (!user) {
-            throw new NotFoundException('Usuário não encontrado')
+            throw new NotFoundException('User not found')
         }
         const { password: _, ...userSafe } = user;
 
@@ -51,7 +51,7 @@ export class UsersService {
         const user = await this.userRepository.findData(data);
 
         if (!user) {
-            throw new NotFoundException('Usuário não encontrado')
+            throw new NotFoundException('User not found')
         }
         const { password: _, ...userSafe } = user;
 
@@ -63,7 +63,7 @@ export class UsersService {
 
         const userAlreadyExist = await this.userRepository.findData({ email });
         if (userAlreadyExist) {
-            throw new ConflictException('Usuário já existe')
+            throw new ConflictException('User already exists')
         }
 
         const passwordHashed = await bcrypt.hash(password, 10);
@@ -83,7 +83,7 @@ export class UsersService {
 
         const userExist = await this.userRepository.findData({ email });
         if (!userExist) {
-            throw new NotFoundException('Usuário não encontrado')
+            throw new NotFoundException('User not found')
         }
 
         let newPassword = userExist.password
@@ -107,12 +107,12 @@ export class UsersService {
         const userExist = await this.userRepository.findData({ email });
 
         if (!userExist) {
-            throw new NotFoundException('Usuário não encontrado')
+            throw new NotFoundException('User not found')
         }
 
         const passwordMatch = await bcrypt.compare(password, userExist.password);
         if (!passwordMatch) {
-            throw new UnauthorizedException('Senha ou email incorretos')
+            throw new UnauthorizedException('Email or password incorrect')
         }
 
         const token = this.jwt.sign(
@@ -131,11 +131,11 @@ export class UsersService {
     async deleteUser(id: number): Promise<{ message: string }> {
         const userExist = await this.userRepository.findById(id);
         if (!userExist) {
-            throw new NotFoundException('Usuário não encontrado')
+            throw new NotFoundException('User not found')
         }
 
         await this.userRepository.deleteUser(userExist.id);
 
-        return { message: 'usuário deletado com sucesso' }
+        return { message: 'user deleted successfully' }
     }
 }
