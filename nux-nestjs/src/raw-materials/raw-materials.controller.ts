@@ -1,13 +1,15 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { RawMaterialsService } from './raw-materials.service';
 import { CreateRawMaterialDto } from './dto/create-raw.dto';
 import { UpdateRawMaterialDto } from './dto/update-raw.dto';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('raw-materials')
 export class RawMaterialsController{
     constructor(private readonly rawMaterialService: RawMaterialsService){ }
 
     @Get()
+    @UseGuards(JwtAuthGuard)
     async findAll(
         @Query('page') page: string = '1',
         @Query('limit') limit: string = '20',
@@ -18,8 +20,10 @@ export class RawMaterialsController{
 
         return await this.rawMaterialService.findAll(pageSafe, limitSafe, sort)
     }
+    
 
     @Get('find/name')
+    @UseGuards(JwtAuthGuard)
     async findByName(
         @Query('page') page: string = '1',
         @Query('limit') limit: string = '20',
@@ -33,6 +37,7 @@ export class RawMaterialsController{
     }
 
     @Get('find/cod')
+    @UseGuards(JwtAuthGuard)
     async findByCod(
         @Query('cod') cod: string
     ) {
@@ -41,6 +46,7 @@ export class RawMaterialsController{
 
 
     @Post('create')
+    @UseGuards(JwtAuthGuard)
     async createRawMaterial(
         @Body() createRawMaterialInput: CreateRawMaterialDto
     ) {
@@ -48,6 +54,7 @@ export class RawMaterialsController{
     }
 
     @Put('update/:id')
+    @UseGuards(JwtAuthGuard)
     async updateRawMaterial(
         @Param('id') id: string,
         @Body() updateRawMaterialInput: UpdateRawMaterialDto
@@ -56,6 +63,7 @@ export class RawMaterialsController{
     }
 
     @Delete('delete/:id')
+    @UseGuards(JwtAuthGuard)
     async deleteRawMaterial(
         @Param('id') id: string
     ) {

@@ -1,13 +1,15 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('products')
 export class ProductsController{
     constructor(private readonly productsService: ProductsService){ }
 
     @Get()
+    @UseGuards(JwtAuthGuard)
     async findAll(
         @Query('page') page: string = '1',
         @Query('limit') limit: string = '20',
@@ -20,6 +22,7 @@ export class ProductsController{
     }
 
     @Get('find/name')
+    @UseGuards(JwtAuthGuard)
     async findByName(
         @Query('page') page: string = '1',
         @Query('limit') limit: string = '20',
@@ -33,6 +36,7 @@ export class ProductsController{
     }
 
     @Get('find/cod')
+    @UseGuards(JwtAuthGuard)
     async findByCod(
         @Query('cod') cod: string
     ) {
@@ -40,6 +44,7 @@ export class ProductsController{
     }
 
     @Post('create')
+    @UseGuards(JwtAuthGuard)
     async createProduct(
         @Body() createProductInput: CreateProductDto
     ) {
@@ -47,6 +52,7 @@ export class ProductsController{
     }
 
     @Put('update/:id')
+    @UseGuards(JwtAuthGuard)
     async updateProduct(
         @Param('id') id: string,
         @Body() updateProductInput: UpdateProductDto
@@ -55,6 +61,7 @@ export class ProductsController{
     }
 
     @Delete('delete/:id')
+    @UseGuards(JwtAuthGuard)
     async deleteProduct(
         @Param('id') id: string
     ) {

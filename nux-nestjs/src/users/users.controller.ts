@@ -1,14 +1,16 @@
-import { Controller, Get, Post, Put, Body, Param, Query, HttpCode, HttpStatus, Headers, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Put, Body, Param, Query, HttpCode, HttpStatus, Headers, Delete, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { LoginDto } from './dto/login-user.dto';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('users')
 export class UsersController {
     constructor(private readonly userService: UsersService) { }
 
     @Get()
+    @UseGuards(JwtAuthGuard)
     async findAll(
         @Query('page') page: string = '1',
         @Query('limit') limit: string = '20',
@@ -21,11 +23,14 @@ export class UsersController {
     }
 
     @Get(':id')
+    @UseGuards(JwtAuthGuard)
+
     async findById(@Param('id') id: string) {
         return await this.userService.findById(Number(id))
     }
 
     @Get('filter')
+    @UseGuards(JwtAuthGuard)
     async findByData(
         @Body('filter') filter: string
     ) {
@@ -41,6 +46,7 @@ export class UsersController {
     }
 
     @Put('update/:id')
+    @UseGuards(JwtAuthGuard)
     async updateUser(
         @Param('id') id: string,
         @Body() updateUserDto: UpdateUserDto
@@ -57,6 +63,7 @@ export class UsersController {
     }
 
     @Delete('delete/:id')
+    @UseGuards(JwtAuthGuard)
     async deleteUser(
         @Param('id') id: string
     ) {

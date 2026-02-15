@@ -185,7 +185,7 @@ The application will be available at `http://localhost:5173`.
 Create a `.env` file in the `nux-nestjs/` directory:
 
 ```env
-DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE"
+DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE?schema=public"
 JWT_SECRET="your-jwt-secret-key"
 ```
 
