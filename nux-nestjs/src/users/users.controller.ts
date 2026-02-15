@@ -69,4 +69,15 @@ export class UsersController {
     ) {
         return await this.userService.deleteUser(Number(id))
     }
+
+    @Post('refresh-token')
+    async refreshToken(@Body('refreshToken') refreshToken: string) {
+        return await this.userService.refreshAcessToken(refreshToken);
+    }
+
+    @Post('logout')
+    @UseGuards(JwtAuthGuard)
+    async logout(@Body('refreshToken') refreshToken: string) {
+        return await this.userService.logout(refreshToken);
+    }
 }

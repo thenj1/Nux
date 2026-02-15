@@ -12,6 +12,8 @@ model User {
   name      String
   email     String   @unique
   password  String
+
+  refreshTokens RefreshToken[]
 }
 
 model Product {
@@ -43,4 +45,14 @@ model ProductMaterial {
   rawMaterial     RawMaterial @relation(fields: [rawMaterialId], references: [id], onDelete: Cascade)
 
   @@unique([productId, rawMaterialId])
+}
+
+model RefreshToken{
+  id              Int         @id @default(autoincrement())
+  token           String      @unique
+  createdAt       DateTime?   @default(now())
+  expiresAt       DateTime      
+
+  userId          Int
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

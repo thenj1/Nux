@@ -17,4 +17,10 @@ export class PaginatedResponse<Titem> {
 export class LoginResponse {
     user: UserResponse;
     token: string;
+    refreshToken: string;
+}
+
+export class RefreshTokenResponse{
+    token: string;
+    refreshToken: string;
 }

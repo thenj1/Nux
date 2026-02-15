@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { Prisma, User } from "@prisma/client";
+import { Prisma, User, RefreshToken } from "@prisma/client";
 import { PrismaService } from "src/prisma-config/prisma.service";
 
 @Injectable()
@@ -54,6 +54,42 @@ export class UserRepository {
         return await this.prisma.user.delete({
             where: {
                 id: Number(id)
+            }
+        })
+    }
+
+    async createRefreshToken(data: Prisma.RefreshTokenCreateInput): Promise<RefreshToken> {
+        return await this.prisma.refreshToken.create({
+            data: data
+        })
+    }
+
+    async findRefreshToken(token: string): Promise<RefreshToken | null> {
+        return await this.prisma.refreshToken.findUnique({
+            where: { token }
+        })
+    }
+
+    async deleteRefreshToken(id: number): Promise<RefreshToken> {
+        return await this.prisma.refreshToken.delete({
+            where:{
+                id: Number(id)
+            }
+        })
+    }
+
+    async deleteUserAllRefreshToken(userId: number): Promise<Prisma.BatchPayload> {
+        return await this.prisma.refreshToken.deleteMany({
+            where:{
+                userId: userId
+            }
+        })
+    }
+
+    async deleteExpiredRefreshToken(): Promise<Prisma.BatchPayload> {
+        return await this.prisma.refreshToken.deleteMany({
+            where: {
+                expiresAt: {lt: new Date()}
             }
         })
     }

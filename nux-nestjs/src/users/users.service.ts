@@ -5,7 +5,7 @@ import { UserRepository } from './users.repository';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { LoginDto } from './dto/login-user.dto';
-import { LoginResponse, PaginatedResponse, UserResponse } from './dto/user-response.dto';
+import { LoginResponse, PaginatedResponse, RefreshTokenResponse, UserResponse } from './dto/user-response.dto';
 
 @Injectable()
 export class UsersService {
@@ -102,6 +102,17 @@ export class UsersService {
         return userSafe;
     }
 
+    async deleteUser(id: number): Promise<{ message: string }> {
+        const userExist = await this.userRepository.findById(id);
+        if (!userExist) {
+            throw new NotFoundException('User not found')
+        }
+
+        await this.userRepository.deleteUser(userExist.id);
+
+        return { message: 'user deleted successfully' }
+    }
+
     async login(data: LoginDto): Promise<LoginResponse> {
         const { email, password } = data;
         const userExist = await this.userRepository.findData({ email });
@@ -124,18 +135,94 @@ export class UsersService {
             { expiresIn: "30m" }
         )
 
+        const refreshToken = this.jwt.sign({
+            id: userExist.id,
+            name: userExist.name,
+            email: userExist.email
+        }, 
+        { 
+            expiresIn: "7d",
+            secret: process.env.JWT_SECRET_REFRESH
+        } 
+        )
+
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + 7)
+
+        await this.userRepository.createRefreshToken({
+            token: refreshToken,
+            user:{
+                connect: {
+                    id: userExist.id
+                }
+            },
+            expiresAt
+        })
+
         const { password: _, ...userSafe } = userExist;
-        return { user: userSafe, token }
+        return { user: userSafe, token, refreshToken }
     }
 
-    async deleteUser(id: number): Promise<{ message: string }> {
-        const userExist = await this.userRepository.findById(id);
-        if (!userExist) {
+    async refreshAcessToken(refreshToken: string): Promise<RefreshTokenResponse> {
+        const refreshTokenExist = await this.userRepository.findRefreshToken(refreshToken)
+        if(!refreshTokenExist){
+            throw new NotFoundException('Token not found')
+        }
+
+        if(refreshTokenExist.expiresAt < new Date()){
+            await this.userRepository.deleteRefreshToken(refreshTokenExist.id);
+            throw new UnauthorizedException('Token invalid')
+        }
+
+        await this.userRepository.deleteRefreshToken(refreshTokenExist.id);
+
+        const userFound = await this.findById(refreshTokenExist.userId);
+        if(!userFound){
             throw new NotFoundException('User not found')
         }
 
-        await this.userRepository.deleteUser(userExist.id);
+        const token = await this.jwt.sign({
+            id: userFound.id,
+            email: userFound.email,
+            name: userFound.name
+        },
+        { expiresIn: "30m" }
+        )
 
-        return { message: 'user deleted successfully' }
+        const newRefreshToken = await this.jwt.sign({
+            id: userFound.id,
+            email: userFound.email,
+            name: userFound.name
+        },
+        {
+            expiresIn: "7d",
+            secret: process.env.JWT_SECRET_REFRESH
+        }
+        )
+        
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + 7);
+
+        await this.userRepository.createRefreshToken({
+            token: newRefreshToken,
+            user: {
+                connect: {
+                    id: userFound.id
+                }
+            },
+            expiresAt
+        })
+        return { token, refreshToken: newRefreshToken }
+    }
+
+    async logout(refreshToken: string): Promise<{ message: string }> {
+        const token = await this.userRepository.findRefreshToken(refreshToken);
+        if(!token){
+            throw new NotFoundException('Token not found')
+        }
+
+        await this.userRepository.deleteRefreshToken(token.id);
+        return { message: "Logout sucessfully" };
     }
 }
+
